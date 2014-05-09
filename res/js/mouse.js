@@ -2,17 +2,10 @@ var touchStartX, touchStartY;
 var mouseX, mouseY;
 var touchX, touchY;
 var mouseDown;
-var whichButton; 
 
 function touchStart(e) {
 	mouseDown = true;
-	whichButton = 0;
-	if (e.which) {
-		whichButton = e.which;
-	} else if (e.button) {
-	   if (e.button == 2) { whichButton = 2; }
-	   if (e.button == 4) { whichButton = 3; }
-	}
+	
 
 	x = e.x || e.targetTouches[0].pageX;
 	y = e.y || e.targetTouches[0].pageY;
