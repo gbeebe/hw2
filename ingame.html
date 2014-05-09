@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+	<head>
+		<title>ingame</title>
+	</head>
+	
+	<body style="margin: 0px; padding: 0px;">
+		<div id="holder"></div>
+		
+	
+		<script type="text/javascript" src="res/js/sprite.js"></script>
+		<script type="text/javascript" src="res/js/animationFrame.js"></script>
+		<script type="text/javascript" src="res/js/mouse.js"></script>
+		<script>
+			var scaleX = 1;
+			var scaleY = 1;
+			
+			var setting = {
+				width: 160,
+				height: 240,
+				ratio: 0.666666667
+			};
+			
+			
+			var player = {
+				x: 			76,
+				ac: 		0,		//animation counter
+				af: 		0, 		//animation frame
+				f: 			1		//f = facing. 1 is right, 0 is left;
+			}
+			
+			
+			
+			var spr_soldier = _addSprite('res/sprites/soldier.png');
+			
+			var can = document.createElement('canvas');
+				can.width = 320 //window.innerWidth;
+				can.height = 480// window.innerHeight; 
+				can.id = 'game';
+				can.style.position = 'absolute';
+				can.style.backgroundColor = "#22ff22";
+				
+			var ctx = can.getContext("2d");
+				ctx.webkitImageSmoothingEnabled = false; 
+				ctx.mozImageSmoothingEnabled = false;
+				ctx.imageSmoothingEnabled = false;
+				ctx.globalCompositeOperation='copy';
+				
+			var buf = document.createElement('canvas');
+				buf.width = setting.width;
+				buf.height = setting.height;
+				buf.style.backgroundColor = 'black';
+			
+			var map = document.createElement('canvas');
+				map.width = setting.width;
+				map.height = setting.height;
+				
+						
+			document.getElementById('holder').appendChild(can);
+			
+			_waitSprites(loaded);
+			
+			function loaded() {			
+				draw();
+				logic();
+			}
+			
+			
+			
+			function logic() {
+				if (player.ac == 0) {
+					player.af++;
+					if (player.af == 2) {
+						player.af = 0;
+					}
+											
+					player.ac = 15;
+				}
+				player.ac--;
+				
+				var go = parseInt(touchX / 2) - 8; //change to screen ratio 
+				if (player.x > go) { 
+					player.x--;
+					player.f = 1;
+				}	
+				if (player.x < go) {
+					player.x++;
+					player.f = 0;
+				}	
+				
+				if (player.x < 0) player.x = 0;
+				if (player.x > 144) player.x = 144;
+				
+				setTimeout(logic, 1000 / 60);
+			}
+			
+			function draw() {
+				
+				
+				bufCtx = buf.getContext("2d");
+				//clear the buffer
+				bufCtx.beginPath();
+				bufCtx.clearRect(0, 0, setting.width, setting.height);
+				bufCtx.closePath();
+			
+				bufCtx.drawImage(_getSprite(spr_soldier), player.af * 16, player.f * 16, 16, 16, player.x, 200, 16, 16);
+				ctx.drawImage(buf, 0, 0, 320, 480);
+				
+				requestAnimationFrame(draw);
+				
+			}
+			
+			
+		</script>
+	
+	</body>
+
+</html>
