@@ -24,14 +24,18 @@
 			
 			var player = {
 				x: 			76,
+				y:			180,
 				ac: 		0,		//animation counter
 				af: 		0, 		//animation frame
-				f: 			1		//f = facing. 1 is right, 0 is left;
+				f: 			1,		//f = facing. 1 is right, 0 is left;
+				d: 			0		//distance traveled
 			}
 			
 			
 			
 			var spr_soldier = _addSprite('res/sprites/soldier.png');
+			var spr_bullet = _addSprite('res/sprites/bullet.png');
+			var spr_rapid = _addSprite('res/sprites/rapid.png');
 			
 			var can = document.createElement('canvas');
 				can.width = 320 //window.innerWidth;
@@ -65,9 +69,62 @@
 				logic();
 			}
 			
+			var gunCool = 40;
+			var gunClock = gunCool;
+			
+			var proj = [];
+			
+			function pBul(p) {
+				proj[p].y -= 1;
+			}
+			
+			function pBonus(p) {
+				proj[p].y += 1;
+				
+								
+				r = proj[p]
+				if (!(	r.x > player.x + 12 || 
+						r.x + x < player.x + 4|| 
+           				r.y > player.y + 16 ||
+           				r.y + 8 < player.y + 8)) {
+           			
+           			if(gunCool > 10) {	
+	           			gunCool -= 10;
+	           		}	
+           			proj.splice(p, 1);		
+           		}
+				
+			}
+			
 			
 			
 			function logic() {
+				//gun
+				gunClock--;
+				var n = proj.length;
+				if (gunClock == 0) {
+					gunClock = gunCool;
+					
+					proj[n] = {x: player.x, y: player.y, fun: "pBul", i: spr_bullet} 
+				}
+				
+				var n = proj.length;
+				console.log(n);
+				for(p = 0; p < proj.length; p++) {
+					
+					window[proj[p].fun](p);
+					if (proj[p].y < -8) {
+						proj.splice(p, 1);
+					}else{
+						
+					}
+				}
+				
+				player.d++;
+				if (player.d % 1000 == 0) {
+					proj[proj.length] = {x: Math.floor(Math.random() * 130) + 10, y: -8, fun: "pBonus", i: spr_rapid, t: 'r'}
+				}
+				
 				if (player.ac == 0) {
 					player.af++;
 					if (player.af == 2) {
@@ -91,6 +148,9 @@
 				if (player.x < 0) player.x = 0;
 				if (player.x > 144) player.x = 144;
 				
+				
+				
+				
 				setTimeout(logic, 1000 / 60);
 			}
 			
@@ -103,7 +163,16 @@
 				bufCtx.clearRect(0, 0, setting.width, setting.height);
 				bufCtx.closePath();
 			
-				bufCtx.drawImage(_getSprite(spr_soldier), player.af * 16, player.f * 16, 16, 16, player.x, 190, 16, 16);
+				bufCtx.drawImage(_getSprite(spr_soldier), player.af * 16, player.f * 16, 16, 16, player.x, player.y, 16, 16);
+				
+				
+				var n = proj.length;
+				for(p = 0; p < n; p++) {
+					bufCtx.drawImage(_getSprite(proj[p].i), proj[p].x+4, proj[p].y);
+				}
+				
+				
+				
 				ctx.drawImage(buf, 0, 0, 320, 480);
 				
 				requestAnimationFrame(draw);
