@@ -28,14 +28,15 @@
 				ac: 		0,		//animation counter
 				af: 		0, 		//animation frame
 				f: 			1,		//f = facing. 1 is right, 0 is left;
-				d: 			0		//distance traveled
+				d: 			0,		//distance traveled
+				g:			1		//gun type
 			}
 			
 			
 			
 			var spr_soldier = _addSprite('res/sprites/soldier.png');
 			var spr_bullet = _addSprite('res/sprites/bullet.png');
-			var spr_rapid = _addSprite('res/sprites/rapid.png');
+			var spr_upgrade = _addSprite('res/sprites/rapid.png');
 			
 			var can = document.createElement('canvas');
 				can.width = 320 //window.innerWidth;
@@ -78,6 +79,25 @@
 				proj[p].y -= 1;
 			}
 			
+			function pWav(p) {
+				proj[p].y -= 1;
+				
+				proj[p].w += proj[p].s;
+				proj[p].x += proj[p].w;
+				
+				if (proj[p].w == 2) {
+					proj[p].s = -0.25;
+				}else if (proj[p].w == -2) {
+					proj[p].s = 0.25
+				}
+			}
+			
+			function pSpr(p) {
+				proj[p].y -= 1;
+				proj[p].x += proj[p].s;
+				
+			}
+			
 			function pBonus(p) {
 				proj[p].y += 1;
 				
@@ -88,9 +108,8 @@
            				r.y > player.y + 16 ||
            				r.y + 8 < player.y + 8)) {
            			
-           			if(gunCool > 10) {	
-	           			gunCool -= 10;
-	           		}	
+           			player.g++;
+           			
            			proj.splice(p, 1);		
            		}
 				
@@ -101,28 +120,38 @@
 			function logic() {
 				//gun
 				gunClock--;
-				var n = proj.length;
+				
 				if (gunClock == 0) {
 					gunClock = gunCool;
 					
-					proj[n] = {x: player.x, y: player.y, fun: "pBul", i: spr_bullet} 
+					//if (player.g == 1) {
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pBul", i: spr_bullet}; 
+					//}	
+					if (player.g > 1) {
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: 2, s: -0.5};
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: -2, s: 0.5};
+					}
+					if (player.g > 2) {
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, s: 1}; 
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, s: -1};
+					}
 				}
 				
 				var n = proj.length;
-				console.log(n);
+				
 				for(p = 0; p < proj.length; p++) {
 					
-					window[proj[p].fun](p);
+					
 					if (proj[p].y < -8) {
 						proj.splice(p, 1);
 					}else{
-						
+						window[proj[p].fun](p);
 					}
 				}
 				
 				player.d++;
-				if (player.d % 1000 == 0) {
-					proj[proj.length] = {x: Math.floor(Math.random() * 130) + 10, y: -8, fun: "pBonus", i: spr_rapid, t: 'r'}
+				if (player.d % 100 == 0) {
+					proj[proj.length] = {x: Math.floor(Math.random() * 130) + 10, y: -8, fun: "pBonus", i: spr_upgrade}
 				}
 				
 				if (player.ac == 0) {
