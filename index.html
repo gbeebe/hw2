@@ -1,30 +1,245 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Android App Test</title>
+		<title>ingame</title>
 	</head>
-	<body>	
-		<b>Gary Beebe's Hello World App!</b><br/>
-		<button id="clickey">Click Me</button>
-		<button id="report">Report</button>
-		<button id="clear">Play</button>
-		<div id="res"></div>
+	
+	<body style="margin: 0px; padding: 0px;">
+		<div id="holder"></div>
 		
-
+	
+		<script type="text/javascript" src="res/js/sprite.js"></script>
+		<script type="text/javascript" src="res/js/animationFrame.js"></script>
+		<script type="text/javascript" src="res/js/mouse.js"></script>
 		<script>
-			document.getElementById('clickey').onclick = function() {
-				document.getElementById('res').innerHTML = "Hello World!";			
+			var scaleX = 1;
+			var scaleY = 1;
+			
+			var setting = {
+				width: 160,
+				height: 240,
+				ratio: 0.666666667
+			};
+			
+			
+			var player = {
+				x: 			76,
+				y:			180,
+				ac: 		0,		//animation counter
+				af: 		0, 		//animation frame
+				f: 			1,		//f = facing. 1 is right, 0 is left;
+				d: 			0,		//distance traveled
+				g:			1		//gun type
 			}
 			
-			document.getElementById('report').onclick = function() {
-				var w = window.innerWidth;
-				var h = window.innerHeight;
-				document.getElementById('res').innerHTML = "width: " + w + "<br>height: " + h + "<br>";			
+			
+			
+			
+			var spr_splash = _addSprite('res/sprites/splash.png');
+			
+			var can = document.createElement('canvas');
+				can.width = 320 //window.innerWidth;
+				can.height = 480// window.innerHeight; 
+				can.id = 'game';
+				can.style.position = 'absolute';
+				can.style.backgroundColor = "#22ff22";
+				
+			var ctx = can.getContext("2d");
+				ctx.webkitImageSmoothingEnabled = false; 
+				ctx.mozImageSmoothingEnabled = false;
+				ctx.imageSmoothingEnabled = false;
+				ctx.globalCompositeOperation='copy';
+				
+			var buf = document.createElement('canvas');
+				buf.width = setting.width;
+				buf.height = setting.height;
+				buf.style.backgroundColor = 'black';
+			
+			var map = document.createElement('canvas');
+				map.width = setting.width;
+				map.height = setting.height;
+				
+						
+			document.getElementById('holder').appendChild(can);
+			
+			window.onload = function() {
+				console.log("ready");
+				_waitSprites(splash);
 			}
 			
-			document.getElementById('clear').onclick = function() {
-				window.location = "ingame.html";
+			var tx = touchX;
+			var ty = touchY;	
+				
+			function splash() {
+				bufCtx = buf.getContext("2d");
+				//clear the buffer
+				bufCtx.beginPath();
+				bufCtx.clearRect(0, 0, setting.width, setting.height);
+				bufCtx.closePath();
+			
+				bufCtx.drawImage(_getSprite(spr_splash),0, 0);				
+				ctx.drawImage(buf, 0, 0, 320, 480);
+				
+				//load resources
+				spr_soldier = _addSprite('res/sprites/soldier.png');
+				spr_bullet = _addSprite('res/sprites/bullet.png');
+				spr_upgrade = _addSprite('res/sprites/upgrade.png');
+				
+				if (_allSpritesLoaded() && (tx != touchX || ty != touchY)) {
+					loaded()
+				}else{
+					setTimeout(splash, 100);
+				}
 			}
+			
+			
+			
+			function loaded() {			
+				draw();
+				logic();
+			}
+			
+			var gunCool = 40;
+			var gunClock = gunCool;
+			
+			var proj = [];
+			
+			function pBul(p) {
+				proj[p].y -= 1;
+			}
+			
+			function pWav(p) {
+				proj[p].y -= 1;
+				
+				proj[p].w += proj[p].s;
+				proj[p].x += proj[p].w;
+				
+				if (proj[p].w == 2) {
+					proj[p].s = -0.25;
+				}else if (proj[p].w == -2) {
+					proj[p].s = 0.25
+				}
+			}
+			
+			function pSpr(p) {
+				proj[p].y -= proj[p].ay;
+				proj[p].x += proj[p].ax;
+				
+			}
+			
+			function pBonus(p) {
+				proj[p].y += 1;
+				
+								
+				r = proj[p]
+				if (!(	r.x > player.x + 12 || 
+						r.x + x < player.x + 4|| 
+           				r.y > player.y + 16 ||
+           				r.y + 8 < player.y + 8)) {
+           			
+           			player.g++;
+           			
+           			proj.splice(p, 1);		
+           		}
+				
+			}
+			
+			
+			
+			function logic() {
+				//gun
+				gunClock--;
+				
+				if (gunClock == 0) {
+					gunClock = gunCool;
+					
+					
+					proj[proj.length] = {x: player.x, y: player.y+10, fun: "pBul", i: spr_bullet}; 
+					
+					if (player.g > 1) {
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: 2, ax: -0.382683432, ay: 0.923879533};
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: -2, ax: 0.382683432, ay: 0.923879533};
+					} 
+					if (player.g > 2) {
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: 2, ax: -0.707106781, ay: 0.707106781};
+						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: -2, ax: 0.707106781, ay: 0.707106781};
+					}
+				}
+				
+				var n = proj.length;
+				
+				for(p = 0; p < proj.length; p++) {
+					
+					
+					if (proj[p].y < -8) {
+						proj.splice(p, 1);
+					}else{
+						window[proj[p].fun](p);
+					}
+				}
+				
+				player.d++;
+				if (player.d % 1000 == 0) {
+					proj[proj.length] = {x: Math.floor(Math.random() * 130) + 10, y: -8, fun: "pBonus", i: spr_upgrade}
+				}
+				
+				if (player.ac == 0) {
+					player.af++;
+					if (player.af == 2) {
+						player.af = 0;
+					}
+											
+					player.ac = 15;
+				}
+				player.ac--;
+				
+				var go = parseInt(touchX / 2) - 8; //change to screen ratio 
+				if (player.x > go) { 
+					player.x--;
+					player.f = 1;
+				}	
+				if (player.x < go) {
+					player.x++;
+					player.f = 0;
+				}	
+				
+				if (player.x < 0) player.x = 0;
+				if (player.x > 144) player.x = 144;
+				
+				
+				
+				
+				setTimeout(logic, 1000 / 60);
+			}
+			
+			function draw() {
+				
+				
+				bufCtx = buf.getContext("2d");
+				//clear the buffer
+				bufCtx.beginPath();
+				bufCtx.clearRect(0, 0, setting.width, setting.height);
+				bufCtx.closePath();
+			
+				bufCtx.drawImage(_getSprite(spr_soldier), player.af * 16, player.f * 16, 16, 16, player.x, player.y, 16, 16);
+				
+				
+				var n = proj.length;
+				for(p = 0; p < n; p++) {
+					bufCtx.drawImage(_getSprite(proj[p].i), proj[p].x+4, proj[p].y);
+				}
+				
+				
+				
+				ctx.drawImage(buf, 0, 0, 320, 480);
+				
+				requestAnimationFrame(draw);
+				
+			}
+			
+			
 		</script>
+	
 	</body>
+
 </html>
