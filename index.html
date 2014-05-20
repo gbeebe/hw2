@@ -24,16 +24,14 @@
 			
 			var player = {
 				x: 			76,
-				y:			180,
+				y:			60,
 				ac: 		0,		//animation counter
 				af: 		0, 		//animation frame
 				f: 			1,		//f = facing. 1 is right, 0 is left;
 				d: 			0,		//distance traveled
-				g:			1		//gun type
+				g:			1,		//gun type
+				gm:			0		//gun mode
 			}
-			
-			
-			
 			
 			var spr_splash = _addSprite('res/sprites/splash.png');
 			
@@ -81,20 +79,34 @@
 				ctx.drawImage(buf, 0, 0, 320, 480);
 				
 				//load resources
-				spr_soldier = _addSprite('res/sprites/soldier.png');
-				spr_bullet = _addSprite('res/sprites/bullet.png');
-				spr_upgrade = _addSprite('res/sprites/upgrade.png');
-				
+				loadLevel('l1-1');
+				spr_tileset = _addSprite('res/sprites/tileset.png');
+			
+				postSplash();
+			}
+			
+			function postSplash() {	
 				if (_allSpritesLoaded() && (tx != touchX || ty != touchY)) {
 					loaded()
 				}else{
-					setTimeout(splash, 100);
+					setTimeout(postSplash, 100);
 				}
 			}
 			
+			var level = 1.1;
+			var map = new Array(19);
+			function clearMap() {
+				for (m = 0; m < 20; m++) {
+					map[m] = new Array(800);
+				}
+			}
+			clearMap();
+			objects = [];
 			
-			
-			function loaded() {			
+			function loaded() {				
+			  	
+				
+						
 				draw();
 				logic();
 			}
@@ -103,48 +115,84 @@
 			var gunClock = gunCool;
 			
 			var proj = [];
+			var zombie = [];
 			
-			function pBul(p) {
-				proj[p].y -= 1;
-			}
 			
-			function pWav(p) {
-				proj[p].y -= 1;
-				
-				proj[p].w += proj[p].s;
-				proj[p].x += proj[p].w;
-				
-				if (proj[p].w == 2) {
-					proj[p].s = -0.25;
-				}else if (proj[p].w == -2) {
-					proj[p].s = 0.25
-				}
-			}
 			
-			function pSpr(p) {
+			function pbullet(p) {
 				proj[p].y -= proj[p].ay;
 				proj[p].x += proj[p].ax;
 				
+				r = proj[p]
+				for(z = 0; z < zombie.length; z++) {
+				
+					if ((	r.x + 4 > zombie[z].x - 4 && 
+							r.x + 4 < zombie[z].x + 10 && 
+		       				r.y + 4 > zombie[z].y + 7 &&
+		       				r.y + 4 < zombie[z].y + 15)) {
+		       			if (zombie[z].s == 0) {	
+		       				console.log("hit");
+			       			zombie[z].s = 1;		       			
+			       			proj.splice(p, 1);		
+			       		}	
+		       		}
+				}
+								
 			}
 			
-			function pBonus(p) {
+			function g1(p) {
 				proj[p].y += 1;
 				
 								
 				r = proj[p]
 				if (!(	r.x > player.x + 12 || 
-						r.x + x < player.x + 4|| 
-           				r.y > player.y + 16 ||
-           				r.y + 8 < player.y + 8)) {
-           			
-           			player.g++;
-           			
+						r.x + 8 < player.x + 4|| 
+           				r.y > 240 - player.y + 16 ||
+           				r.y + 8 < 240 - player.y + 8)) {
+           			//player has this gun? then upgrade gun mode, otherwise switch to this gun.	
+           			if (player.g == 1) {
+           				player.gm++;
+           			}else{	
+           				player.g = 1;
+           				player.gm = 0;
+           			}
            			proj.splice(p, 1);		
            		}
 				
 			}
 			
+			function addObject(x, y, tx, ty, o, i, ax, ay, w, h) {
+				//width and height of sprite					
+				w = w ? w : 8;
+				h = h ? h : 8;
+				if (o == "z1") {console.log("NO!");};
+				proj[proj.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "i": i, "ax": ax, "ay": ay, "w": w, "h": h}								
+			}
 			
+			
+			//zombie
+			function z1(p) {
+				
+				if (zombie[p].s == 0) {
+					zombie[p].tx = 56 + (player.af * 16);
+					zombie[p].y += 1;
+				}else{
+					zombie[p].tx = 88;
+					zombie[p].y += 0.5;
+				}	
+				
+				if (zombie[p].y > setting.hegiht) {
+					zombie.splice(p, 1);
+				}
+			}
+			
+			function addZombie(x, y, tx, ty, o, w, h) {
+				//width and height of sprite					
+				w = w ? w : 8;
+				h = h ? h : 8;
+					
+				zombie[zombie.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "w": w, "h": h, "s": 0}	;							
+			}
 			
 			function logic() {
 				//gun
@@ -153,36 +201,49 @@
 				if (gunClock == 0) {
 					gunClock = gunCool;
 					
-					
-					proj[proj.length] = {x: player.x, y: player.y+10, fun: "pBul", i: spr_bullet}; 
-					
-					if (player.g > 1) {
-						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: 2, ax: -0.382683432, ay: 0.923879533};
-						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: -2, ax: 0.382683432, ay: 0.923879533};
-					} 
-					if (player.g > 2) {
-						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: 2, ax: -0.707106781, ay: 0.707106781};
-						proj[proj.length] = {x: player.x, y: player.y+10, fun: "pSpr", i: spr_bullet, w: -2, ax: 0.707106781, ay: 0.707106781};
+					//regular gun
+					if (player.g == 1) {
+						//single shot
+						addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0, 1);
+						//upgraded to level 1
+						if (player.gm > 0) {						
+							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.382683432, 0.923879533);
+							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.382683432, 0.923879533);						
+						} 
+						//upgraded to level 2
+						if (player.gm > 1) {
+							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.707106781, 0.707106781);
+							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.707106781, 0.707106781);
+						}
+					}	
+				}
+				
+				//zombie do
+				var n = zombie.length;
+				for(p = 0; p < zombie.length; p++) {				
+					//does the projectile need erased?
+					if (zombie[p].y < -18 || zombie[p].y > setting.height + 18) {
+						zombie.splice(p, 1);
+					}else{
+						window[zombie[p].fun](p);
 					}
 				}
 				
+				//objects do
 				var n = proj.length;
-				
-				for(p = 0; p < proj.length; p++) {
-					
-					
-					if (proj[p].y < -8) {
+				for(p = 0; p < proj.length; p++) {				
+					//does the projectile need erased?
+					if (proj[p].y < -18 || proj[p].y > setting.height + 18) {
 						proj.splice(p, 1);
 					}else{
 						window[proj[p].fun](p);
 					}
 				}
 				
-				player.d++;
-				if (player.d % 1000 == 0) {
-					proj[proj.length] = {x: Math.floor(Math.random() * 130) + 10, y: -8, fun: "pBonus", i: spr_upgrade}
-				}
+				//advance screen up
+				player.d += 0.5;
 				
+				//player animation frame
 				if (player.ac == 0) {
 					player.af++;
 					if (player.af == 2) {
@@ -193,16 +254,42 @@
 				}
 				player.ac--;
 				
-				var go = parseInt(touchX / 2) - 8; //change to screen ratio 
-				if (player.x > go) { 
-					player.x--;
-					player.f = 1;
-				}	
-				if (player.x < go) {
-					player.x++;
-					player.f = 0;
-				}	
+				//top collision detection
+				if (map[parseInt((player.x + 5) / 8)][parseInt((player.y + player.d) / 8)-1] !== undefined || map[parseInt((player.x + 10) / 8)][parseInt((player.y + player.d) / 8)-1] !== undefined) {
+					player.y -= 0.5;
+				}else{
+					if (player.y < 60) {
+						player.y += 0.5;
+					}
+				}
 				
+				var blockRight = false;
+				var blockLeft = false;
+				
+				//left collision detection
+				if (map[parseInt((player.x + 4) / 8)][parseInt((player.y + player.d -1) / 8)-1] !== undefined || map[parseInt((player.x + 4) / 8)][parseInt((player.y + player.d -7) / 8)-1] !== undefined) {
+					blockLeft = true;
+				}
+				
+				//left collision detection
+				if (map[parseInt((player.x + 11) / 8)][parseInt((player.y + player.d -1) / 8)-1] !== undefined || map[parseInt((player.x + 11) / 8)][parseInt((player.y + player.d -7) / 8)-1] !== undefined) {
+					blockRight = true;
+				}
+				
+				//player movement
+				var go = parseInt(touchX / 2) - 8; //change to screen ratio 
+				if (mouseDown == true) {
+					if (player.x > go && blockLeft == false) { 
+						player.x--;
+						player.f = 1;
+					}	
+					if (player.x < go && blockRight == false) {
+						player.x++;
+						player.f = 0;
+					}	
+				}
+				
+				//keep the player on the screen
 				if (player.x < 0) player.x = 0;
 				if (player.x > 144) player.x = 144;
 				
@@ -213,7 +300,7 @@
 			}
 			
 			function draw() {
-				
+				var ts = _getSprite(spr_tileset);
 				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
@@ -221,23 +308,84 @@
 				bufCtx.clearRect(0, 0, setting.width, setting.height);
 				bufCtx.closePath();
 			
-				bufCtx.drawImage(_getSprite(spr_soldier), player.af * 16, player.f * 16, 16, 16, player.x, player.y, 16, 16);
+			
 				
 				
-				var n = proj.length;
+				dist = parseInt(player.d / 8);
+				
+				//draw visible tiles
+				for (r = dist; r < dist + 31; r++) {
+					for (c = 0; c < 20; c++) {
+						if (map[c][r] !== undefined && map[c][r] !== null) {
+							if (map[c][r].o == 0) {	
+								//draw regular tile						
+								bufCtx.drawImage(ts, map[c][r].x * 8, map[c][r].y * 8, 8, 8, c * 8, 232 - r*8 + player.d, 8, 8);
+							}else{
+								//this is an object spawn
+								t = map[c][r];
+								switch(t.o) {
+									case 'z1': 
+										addZombie(c*8, 232 -r*8 + player.d, 56, 32, "z1", 16, 16);
+										break;											
+									default: 
+										console.log("object");
+										addObject(c*8, 232 - r*8 + player.d, t.x*8, t.y*8, t.o, "?");
+										break;
+								}
+								map[c][r] = undefined;
+							}	
+						}
+					}				
+				}
+				
+				bufCtx.font = "12px Arial";
+				bufCtx.fillText(zombie.length,10,5);
+				
+				//drawing zombies, enemies
+				var n = zombie.length;
+				
+				for(z = 0; z < n; z++) {
+					bufCtx.drawImage(ts, zombie[z].tx, zombie[z].ty, zombie[z].w, zombie[z].h, zombie[z].x-4, zombie[z].y-8, zombie[z].w, zombie[z].h);
+				}
+				
+				//drawing projectiles & objects
+				n = proj.length;
+				
 				for(p = 0; p < n; p++) {
-					bufCtx.drawImage(_getSprite(proj[p].i), proj[p].x+4, proj[p].y);
+					bufCtx.drawImage(ts, proj[p].tx, proj[p].ty, proj[p].w, proj[p].h, proj[p].x, proj[p].y, proj[p].w, proj[p].h);
 				}
 				
 				
+				//draw our soldier
+				bufCtx.drawImage(ts, 56 + player.af * 16, player.f * 16, 16, 16, player.x, 240-player.y, 16, 16);
 				
+				//draw the buffer on screen
 				ctx.drawImage(buf, 0, 0, 320, 480);
+				
+				
 				
 				requestAnimationFrame(draw);
 				
 			}
 			
+		//level loader
+		function loadLevel(levelName) {
+			//starts a new Ajax request to load the level file
+			var oReq = new XMLHttpRequest();
+			oReq.onload = loadLevelListener;
+			oReq.open("get", levelName, true);
+			oReq.send();
 			
+		}
+		
+		function loadLevelListener(e) {
+			//this function is fired when the Ajax request in loadLevel is done
+			tmpMap = JSON.parse(this.responseText).map;
+			clearMap();
+			for (i = 0; i < tmpMap.length; i++) {
+				map[tmpMap[i].mX][tmpMap[i].mY] = {'x' : tmpMap[i].x, 'y' : tmpMap[i].y, 'o': tmpMap[i].o};
+			}
+		}	
 		</script>
 	
 	</body>

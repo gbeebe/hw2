@@ -20,12 +20,14 @@ function touchStart(e) {
 		
 		touchX = mouseX / scaleX;
 		touchY = mouseY / scaleY;
-		//console.log(touchX);									
+		//console.log(touchX);	
+		
+		e.preventDefault();								
 	}	
 	
 	
 	
-	e.preventDefault();
+	
 }
 document.body.addEventListener('mousedown', touchStart, false);
 document.body.addEventListener("touchstart", touchStart, false);
