@@ -31,6 +31,7 @@
 				ratio: 0.666666667
 			};
 			
+			var levelLoaded = false;
 			
 			var player = {
 				x: 			76,
@@ -64,18 +65,21 @@
 				buf.height = setting.height;
 				buf.style.backgroundColor = 'black';
 			
-			/*
+			
 			var mapRow = [];
 			for (r = 0; r < 32; r++) {
+				mapRow[r] = {'canvas' : null, 'ctx' : null};
 				mapRow[r].canvas = document.createElement('canvas');
+				mapRow[r].canvas.height = 8;
+				mapRow[r].canvas.width = 160;
 				mapRow[r].ctx = mapRow[r].canvas.getContext("2d");
 			}
-			*/
 			
-			//var sprites = document.createElement('canvas');
-			//	sprites.width = 512;
-			//	sprites.height = 512;
-			//var sprCtx = sprites.getContext("2d");	
+			
+			var sprites = document.createElement('canvas');
+				sprites.width = 512;
+				sprites.height = 512;
+			var sprCtx = sprites.getContext("2d");	
 						
 			document.getElementById('holder').appendChild(can);
 			
@@ -104,7 +108,7 @@
 			}
 			
 			function postSplash() {	
-				if (_allSpritesLoaded() && (tx != touchX || ty != touchY)) {
+				if (_allSpritesLoaded() && (tx != touchX || ty != touchY) && levelLoaded == true) {
 					loaded();
 				}else{
 					setTimeout(postSplash, 100);
@@ -122,7 +126,7 @@
 			objects = [];
 			
 			function loaded() {				
-			  	//sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
+			  	sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
 				
 						
 				draw();
@@ -149,7 +153,7 @@
 		       				r.y + 4 > zombie[z].y + 7 &&
 		       				r.y + 4 < zombie[z].y + 15)) {
 		       			if (zombie[z].s == 0) {	
-		       				console.log("hit");
+		       				//console.log("hit");
 			       			zombie[z].s = 1;		       			
 			       			proj.splice(p, 1);		
 			       		}	
@@ -183,7 +187,6 @@
 				//width and height of sprite					
 				w = w ? w : 8;
 				h = h ? h : 8;
-				if (o == "z1") {console.log("NO!");};
 				proj[proj.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "i": i, "ax": ax, "ay": ay, "w": w, "h": h}								
 			}
 			
@@ -318,8 +321,8 @@
 			}
 			
 			function draw() {
-				//var ts = sprites;
-				var ts = _getSprite(spr_tileset);
+				var ts = sprites;
+				//var ts = _getSprite(spr_tileset);
 				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
@@ -404,6 +407,7 @@
 			for (i = 0; i < tmpMap.length; i++) {
 				map[tmpMap[i].mX][tmpMap[i].mY] = {'x' : tmpMap[i].x, 'y' : tmpMap[i].y, 'o': tmpMap[i].o};
 			}
+			levelLoaded = true;
 		}	
 		</script>
 	
