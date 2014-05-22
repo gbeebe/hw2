@@ -122,7 +122,7 @@
 			objects = [];
 			
 			function loaded() {				
-			  	sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
+			  	//sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
 				
 						
 				draw();
@@ -318,7 +318,8 @@
 			}
 			
 			function draw() {
-				var ts = sprites;
+				//var ts = sprites;
+				var ts = _getSprite(spr_tileset);
 				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
@@ -356,8 +357,8 @@
 					}				
 				}
 				
-				bufCtx.font = "12px Arial";
-				bufCtx.fillText(zombie.length,10,5);
+				//bufCtx.font = "12px Arial";
+				//bufCtx.fillText(zombie.length,10,5);
 				
 				//drawing zombies, enemies
 				var n = zombie.length;
