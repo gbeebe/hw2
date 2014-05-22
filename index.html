@@ -73,8 +73,8 @@
 			*/
 			
 			var sprites = document.createElement('canvas');
-				backMap.width = 512;
-				backMap.height = 512;
+				sprites.width = 512;
+				sprites.height = 512;
 			var sprCtx = sprites.getContext("2d");	
 						
 			document.getElementById('holder').appendChild(can);
@@ -122,7 +122,7 @@
 			objects = [];
 			
 			function loaded() {				
-			  	//sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
+			  	sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
 				
 						
 				draw();
@@ -318,8 +318,8 @@
 			}
 			
 			function draw() {
-				//var ts = sprites;
-				var ts = _getSprite(spr_tileset);
+				var ts = sprites;
+				//var ts = _getSprite(spr_tileset);
 				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
