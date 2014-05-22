@@ -42,7 +42,6 @@
 			}
 			
 			var spr_splash = _addSprite('res/sprites/splash.png');
-			var spr_tileset = null;	//will hold our sprites;
 			
 			var can = document.createElement('canvas');
 				can.width = 320 //window.innerWidth;
@@ -62,21 +61,16 @@
 				buf.height = setting.height;
 				buf.style.backgroundColor = 'black';
 			
-			var mapRow = [];
-			for (r = 0; r < 32; r++) {
-				mapRow[r].canvas = document.createElement('canvas');
-				mapRow[r].ctx = mapRow[r].canvas.getContext("2d");
-			}
 			
-			
-			var sprites = document.createElement('canvas');
-				backMap.width = 512;
-				backMap.height = 512;
-			var sprCtx = sprites.getContext("2d");	
+			var backMap = document.createElement('canvas');
+				backMap.width = setting.width;
+				backMap.height = setting.height;
+				
 						
 			document.getElementById('holder').appendChild(can);
 			
 			window.onload = function() {
+				console.log("ready");
 				_waitSprites(splash);
 			}
 			
@@ -102,7 +96,7 @@
 			
 			function postSplash() {	
 				if (_allSpritesLoaded() && (tx != touchX || ty != touchY)) {
-					loaded();
+					loaded()
 				}else{
 					setTimeout(postSplash, 100);
 				}
@@ -119,7 +113,7 @@
 			objects = [];
 			
 			function loaded() {				
-			  	sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
+			  	
 				
 						
 				draw();
@@ -315,7 +309,7 @@
 			}
 			
 			function draw() {
-				var ts = sprites;
+				var ts = _getSprite(spr_tileset);
 				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
