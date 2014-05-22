@@ -72,10 +72,10 @@
 			}
 			*/
 			
-			var sprites = document.createElement('canvas');
-				sprites.width = 512;
-				sprites.height = 512;
-			var sprCtx = sprites.getContext("2d");	
+			//var sprites = document.createElement('canvas');
+			//	sprites.width = 512;
+			//	sprites.height = 512;
+			//var sprCtx = sprites.getContext("2d");	
 						
 			document.getElementById('holder').appendChild(can);
 			
@@ -122,7 +122,7 @@
 			objects = [];
 			
 			function loaded() {				
-			  	sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
+			  	//sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
 				
 						
 				draw();
@@ -318,8 +318,8 @@
 			}
 			
 			function draw() {
-				var ts = sprites;
-				//var ts = _getSprite(spr_tileset);
+				//var ts = sprites;
+				var ts = _getSprite(spr_tileset);
 				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
@@ -347,7 +347,7 @@
 										addZombie(c*8, 232 -r*8 + player.d, 56, 32, "z1", 16, 16);
 										break;											
 									default: 
-										console.log("object");
+										//console.log("object");
 										addObject(c*8, 232 - r*8 + player.d, t.x*8, t.y*8, t.o, "?");
 										break;
 								}
