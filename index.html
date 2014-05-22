@@ -125,9 +125,51 @@
 			clearMap();
 			objects = [];
 			
+			function setRow(r, mr) {
+				mapRow[mr].ctx.beginPath();
+				mapRow[mr].ctx.clearRect(0, 0, setting.width, setting.height);
+				mapRow[mr].ctx.closePath();
+				mapRow[mr].r = r;
+				for(c = 0; c < 20; c++) {
+					if(map[c][r] !== undefined) {
+						
+						if (map[c][r].o == 0) {	
+								//draw regular tile						
+								mapRow[mr].ctx.drawImage(sprites, map[c][r].x * 8, map[c][r].y * 8, 8, 8, c * 8, 0, 8, 8); 
+							}else{
+								//this is an object spawn
+								t = map[c][r];
+								switch(t.o) {
+									case 'tile':
+										break;
+									case 'z1': 
+										addZombie(c*8, 232 -r*8 + player.d, 56, 32, "z1", 16, 16);
+										break;											
+									default: 
+										//console.log("object");
+										addObject(c*8, 232 - r*8 + player.d, t.x*8, t.y*8, t.o, "?");
+										break;
+								}
+								map[c][r] = undefined;
+							}	
+						
+						
+					}
+				}					
+			}
+			
 			function loaded() {				
 			  	sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
 				
+				for(r = 0; r < 32; r++) {
+						setRow(r, r);
+						//if(map[c][r] !== undefined) {
+						//	mapRow[r].ctx.drawImage(sprites, map[c][r].x * 8, map[c][r].y * 8, 8, 8, c * 8, 0, 8, 8); 
+							
+						//}	
+						mapRow[r].y = 232 - r * 8;
+						
+				}
 						
 				draw();
 				logic();
@@ -152,9 +194,9 @@
 							r.x + 4 < zombie[z].x + 10 && 
 		       				r.y + 4 > zombie[z].y + 7 &&
 		       				r.y + 4 < zombie[z].y + 15)) {
-		       			if (zombie[z].s == 0) {	
+		       			if (zombie[z].s > 0) {	
 		       				//console.log("hit");
-			       			zombie[z].s = 1;		       			
+			       			zombie[z].s--;		       			
 			       			proj.splice(p, 1);		
 			       		}	
 		       		}
@@ -194,7 +236,7 @@
 			//zombie
 			function z1(p) {
 				
-				if (zombie[p].s == 0) {
+				if (zombie[p].s > 0) {
 					zombie[p].tx = 56 + (player.af * 16);
 					zombie[p].y += 1;
 				}else{
@@ -212,7 +254,7 @@
 				w = w ? w : 8;
 				h = h ? h : 8;
 					
-				zombie[zombie.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "w": w, "h": h, "s": 0}	;							
+				zombie[zombie.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "w": w, "h": h, "s": 1}	;							
 			}
 			
 			function logic() {
@@ -263,6 +305,13 @@
 				
 				//advance screen up
 				player.d += 0.5;
+				for (r = 0; r < 32; r++) {
+					mapRow[r].y += 0.5;
+					if (mapRow[r].y == 240) {
+						setRow(mapRow[r].r+32, r);
+						mapRow[r].y -= 256;
+					}
+				}
 				
 				//player animation frame
 				if (player.ac == 0) {
@@ -336,9 +385,10 @@
 				dist = parseInt(player.d / 8);
 				
 				//draw visible tiles
+				/*
 				for (r = dist; r < dist + 31; r++) {
 					for (c = 0; c < 20; c++) {
-						if (map[c][r] !== undefined && map[c][r] !== null) {
+						if (map[c][r] !== undefined) {
 							if (map[c][r].o == 0) {	
 								//draw regular tile						
 								bufCtx.drawImage(ts, map[c][r].x * 8, map[c][r].y * 8, 8, 8, c * 8, 232 - r*8 + player.d, 8, 8);
@@ -346,6 +396,8 @@
 								//this is an object spawn
 								t = map[c][r];
 								switch(t.o) {
+									case 'tile':
+										break;
 									case 'z1': 
 										addZombie(c*8, 232 -r*8 + player.d, 56, 32, "z1", 16, 16);
 										break;											
@@ -358,6 +410,10 @@
 							}	
 						}
 					}				
+				}
+				*/
+				for (r = 0; r < 32; r++) {
+					bufCtx.drawImage(mapRow[r].canvas, 0, mapRow[r].y);
 				}
 				
 				//bufCtx.font = "12px Arial";
