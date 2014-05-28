@@ -27,7 +27,7 @@
 			
 			var player = {
 				x: 			76,
-				y:			60,
+				y:			-8,
 				ac: 		0,		//animation counter
 				af: 		0, 		//animation frame
 				f: 			1,		//f = facing. 1 is right, 0 is left;
@@ -296,15 +296,17 @@
 				}
 				
 				//advance screen up
-				player.d += 0.5;
-				for (r = 0; r < 32; r++) {
-					mapRow[r].y += 0.5;
-					if (mapRow[r].y == 240) {
-						setRow(mapRow[r].r+32, r);
-						mapRow[r].y -= 256;
+				if (player.d < 6168) {
+					player.d += 0.5;
+				
+					for (r = 0; r < 32; r++) {
+						mapRow[r].y += 0.5;
+						if (mapRow[r].y == 240) {
+							setRow(mapRow[r].r+32, r);
+							mapRow[r].y -= 256;
+						}
 					}
 				}
-				
 				//player animation frame
 				if (player.ac == 0) {
 					player.af++;
@@ -409,7 +411,7 @@
 				}
 				
 				//bufCtx.font = "12px Arial";
-				//bufCtx.fillText(zombie.length,10,5);
+				//bufCtx.fillText(player.d,10,15);
 				
 				//drawing zombies, enemies
 				var n = zombie.length;
