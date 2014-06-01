@@ -182,20 +182,23 @@
 				var r = proj[p]
 				var z = zombie.length;
 				
-				while(z--) {
+				if (proj[p] > -8) {
+					proj.splice(p, 1);
+				}else{
+					while(z--) {
 				
-					if ((	r.x + 4 > zombie[z].x - 4 && 
-							r.x + 4 < zombie[z].x + 10 && 
-		       				r.y + 4 > zombie[z].y + 7 &&
-		       				r.y + 4 < zombie[z].y + 15)) {
-		       			if (zombie[z].s > 0) {	
-		       				//console.log("hit");
-			       			zombie[z].s--;		       			
-			       			proj.splice(p, 1);		
-			       		}	
-		       		}
-				}
-								
+						if ((	r.x + 4 > zombie[z].x - 4 && 
+								r.x + 4 < zombie[z].x + 10 && 
+				   				r.y + 4 > zombie[z].y + 7 &&
+				   				r.y + 4 < zombie[z].y + 15)) {
+				   			if (zombie[z].s > 0) {	
+				   				//console.log("hit");
+					   			zombie[z].s--;		       			
+					   			proj.splice(p, 1);		
+					   		}	
+				   		}
+					}
+				}				
 			}
 			
 			function g1(p) {
@@ -210,6 +213,9 @@
            			//player has this gun? then upgrade gun mode, otherwise switch to this gun.	
            			if (player.g == 1) {
            				player.gm++;
+           				if (player.gm == 1) {
+           					gunCool = 20;
+           				}
            			}else{	
            				player.g = 1;
            				player.gm = 0;
@@ -263,12 +269,12 @@
 						//single shot
 						addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0, 1);
 						//upgraded to level 1
-						if (player.gm > 0) {						
+						if (player.gm > 1) {						
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.382683432, 0.923879533);
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.382683432, 0.923879533);						
 						} 
 						//upgraded to level 2
-						if (player.gm > 1) {
+						if (player.gm > 2) {
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.707106781, 0.707106781);
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.707106781, 0.707106781);
 						}
@@ -382,8 +388,8 @@
 					bufCtx.drawImage(mapRow[r].canvas, 0, mapRow[r].y);
 				}
 				
-				//bufCtx.font = "12px Arial";
-				//bufCtx.fillText(player.d,10,15);
+				bufCtx.font = "12px Arial";
+				bufCtx.fillText(proj.length,10,15);
 				
 				//drawing zombies, enemies
 				var z = zombie.length;
