@@ -14,7 +14,15 @@
 		
 		<script type="text/javascript" src="res/js/stats.js"></script>
 		<script>
-				
+			
+			var isCordovaApp = !!window.cordova;
+			var Multi = 1;
+			if (isCordovaApp) {
+				Multi = 2;
+			}	
+			
+			Multi = 2
+			
 			/* **********************************************
 			*						Stats					*
 			*********************************************** */
@@ -106,6 +114,7 @@
 			var ty = touchY;	
 				
 			function splash() {
+				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
 				bufCtx.beginPath();
@@ -199,8 +208,8 @@
 			
 			
 			function pbullet(p) {
-				proj[p].y -= proj[p].ay;
-				proj[p].x += proj[p].ax;
+				proj[p].y -= proj[p].ay * Multi;
+				proj[p].x += proj[p].ax * Multi;
 				
 				var r = proj[p]
 				var z = zombie.length;
@@ -209,13 +218,23 @@
 					proj.splice(p, 1);
 				}else{
 					while(z--) {
-						
+						zombieZ = zombie[z];
+						if ((	r.x + 4 > zombieZ.x - 4 && 
+								r.x + 4 < zombieZ.x + 10 && 
+				   				r.y + 4 > zombieZ.y + 7 &&
+				   				r.y + 4 < zombieZ.y + 15)) {
+				   			if (zombieZ.s > 0) {	
+					   			zombieZ.s--;		       			
+					   			proj.splice(p, 1);
+					   			zombieZ.owie = true;		
+					   		}					   		
+				   		}
 					}
 				}				
 			}
 			
 			function g1(p) {
-				proj[p].y += 1;
+				proj[p].y += 1 * Multi;
 				
 								
 				r = proj[p]
@@ -251,10 +270,10 @@
 				zombieZ = zombie[z];
 				if (zombieZ.s > 0) {
 					zombieZ.tx = 56 + (player.af * 16);
-					zombieZ.y += 1;
+					zombieZ.y += 1 * Multi;
 				}else{
 					zombieZ.tx = 88;
-					zombieZ.y += 0.5;
+					zombieZ.y += 0.5 * Multi;
 				}	
 				
 				//if (zombieZ.y > setting.hegiht) {
@@ -275,9 +294,9 @@
 				statsMS.begin();
 				
 				//gun
-				gunClock--;
+				gunClock -= 1 * Multi;
 				
-				if (gunClock == 0) {
+				if (gunClock <= 0) {
 					gunClock = gunCool;
 					
 					//regular gun
@@ -331,12 +350,12 @@
 				
 				//advance screen up
 				if (player.d < 6168) {
-					player.d += 0.5;
+					player.d += 0.5 * Multi;
 				
 					for (r = 0; r < 32; r++) {
 						mapRowR = mapRow[r]
-						mapRowR.y += 0.5;
-						if (mapRowR.y == 240) {
+						mapRowR.y += 0.5 * Multi;
+						if (mapRowR.y >= 240) {
 							setRow(mapRowR.r+32, r);
 							mapRowR.y -= 256;
 						}
@@ -354,11 +373,11 @@
 				player.ac--;
 				
 				//top collision detection
-				if (map[parseInt((player.x + 5) / 8)][parseInt((player.y + player.d) / 8)-1] !== undefined || map[parseInt((player.x + 10) / 8)][parseInt((player.y + player.d) / 8)-1] !== undefined) {
-					player.y -= 0.5;
+				if (map[((player.x + 5) / 8) | 0][(((player.y + player.d) / 8)-1) | 0] !== undefined || map[((player.x + 10) / 8) | 0 ][(((player.y + player.d) / 8)-1) | 0] !== undefined) {
+					player.y -= 0.5 * Multi;
 				}else{
 					if (player.y < 60) {
-						player.y += 0.5;
+						player.y += 0.5 * Multi;
 					}
 				}
 				
@@ -366,24 +385,24 @@
 				var blockLeft = false;
 				
 				//left collision detection
-				if (map[parseInt((player.x + 4) / 8)][parseInt((player.y + player.d -1) / 8)-1] !== undefined || map[parseInt((player.x + 4) / 8)][parseInt((player.y + player.d -7) / 8)-1] !== undefined) {
+				if (map[((player.x + 4) / 8) | 0][(((player.y + player.d -1) / 8)-1) | 0] !== undefined || map[((player.x + 4) / 8) | 0][(((player.y + player.d -7) / 8)-1) | 0] !== undefined) {
 					blockLeft = true;
 				}
 				
 				//left collision detection
-				if (map[parseInt((player.x + 11) / 8)][parseInt((player.y + player.d -1) / 8)-1] !== undefined || map[parseInt((player.x + 11) / 8)][parseInt((player.y + player.d -7) / 8)-1] !== undefined) {
+				if (map[((player.x + 11) / 8) | 0][(((player.y + player.d -1) / 8)-1) | 0] !== undefined || map[((player.x + 11) / 8) | 0][(((player.y + player.d -7) / 8)-1) | 0] !== undefined) {
 					blockRight = true;
 				}
 				
 				//player movement
-				var go = parseInt(touchX / 2) - 8; //change to screen ratio 
+				var go = ((touchX / 2) - 8) | 0; //change to screen ratio 
 				if (mouseDown == true) {
 					if (player.x > go && blockLeft == false) { 
-						player.x--;
+						player.x -= 1 * Multi;
 						player.f = 1;
 					}	
 					if (player.x < go && blockRight == false) {
-						player.x++;
+						player.x += 1 * Multi;
 						player.f = 0;
 					}	
 				}
@@ -410,12 +429,12 @@
 				bufCtx.clearRect(0, 0, setting.width, setting.height);
 				bufCtx.closePath();
 				
-				dist = parseInt(player.d / 8);
+				dist = (player.d / 8) | 0;
 				
 				//DRAW THE MAP
 				var r = 32;
 				while (r--) {
-					bufCtx.drawImage(mapRow[r].canvas, 0, mapRow[r].y);
+					bufCtx.drawImage(mapRow[r].canvas, 0, mapRow[r].y | 0);
 				}
 				
 				//bufCtx.font = "12px Arial";
