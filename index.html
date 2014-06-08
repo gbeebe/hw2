@@ -209,16 +209,15 @@
 					proj.splice(p, 1);
 				}else{
 					while(z--) {
-				
-						if ((	r.x + 4 > zombie[z].x - 4 && 
-								r.x + 4 < zombie[z].x + 10 && 
-				   				r.y + 4 > zombie[z].y + 7 &&
-				   				r.y + 4 < zombie[z].y + 15)) {
-				   			if (zombie[z].s > 0) {	
-				   				//console.log("hit");
-					   			zombie[z].s--;		       			
+						zombieZ = zombie[z];
+						if ((	r.x + 4 > zombieZ.x - 4 && 
+								r.x + 4 < zombieZ.x + 10 && 
+				   				r.y + 4 > zombieZ.y + 7 &&
+				   				r.y + 4 < zombieZ.y + 15)) {
+				   			if (zombieZ.s > 0) {	
+					   			zombieZ.s--;		       			
 					   			proj.splice(p, 1);
-					   			zombie[z].owie = true;		
+					   			zombieZ.owie = true;		
 					   		}
 					   		
 				   		}
@@ -259,18 +258,18 @@
 			
 			
 			//zombie
-			function z1(p) {
-				
-				if (zombie[p].s > 0) {
-					zombie[p].tx = 56 + (player.af * 16);
-					zombie[p].y += 1;
+			function z1(z) {
+				zombieZ = zombie[z];
+				if (zombieZ.s > 0) {
+					zombieZ.tx = 56 + (player.af * 16);
+					zombieZ.y += 1;
 				}else{
-					zombie[p].tx = 88;
-					zombie[p].y += 0.5;
+					zombieZ.tx = 88;
+					zombieZ.y += 0.5;
 				}	
 				
-				if (zombie[p].y > setting.hegiht) {
-					zombie.splice(p, 1);
+				if (zombieZ.y > setting.hegiht) {
+					zombie.splice(z, 1);
 				}
 			}
 			
@@ -318,25 +317,26 @@
 				}
 				
 				//zombie do
-				var p = zombie.length;
-				//for(p = 0; p < zombie.length; p++) {				
-				while(p--) {
+				var z = zombie.length;			
+				while(z--) {
+					zombieZ = zombie[z];
 					//does the projectile need erased?
-					if (zombie[p].y < -18 || zombie[p].y > setting.height + 18) {
+					if (zombieZ.y < -18 || zombieZ.y > setting.height + 18) {
 						zombie.splice(p, 1);
 					}else{
-						window[zombie[p].fun](p);
+						window[zombieZ.fun](z);
 					}
 				}
 				
 				//objects do
 				p = proj.length;
-				while(p--) {				
+				while(p--) {	
+					projP = proj[p];			
 					//does the projectile need erased?
-					if (proj[p].y < -18 || proj[p].y > setting.height + 18) {
+					if (projP.y < -18 || projP.y > setting.height + 18) {
 						proj.splice(p, 1);
 					}else{
-						window[proj[p].fun](p);
+						window[projP.fun](p);
 					}
 				}
 				
@@ -421,22 +421,25 @@
 				bufCtx.closePath();
 				
 				dist = parseInt(player.d / 8);
+				
+				//DRAW THE MAP
 				var r = 32;
 				while (r--) {
 					bufCtx.drawImage(mapRow[r].canvas, 0, mapRow[r].y);
 				}
 				
-				bufCtx.font = "12px Arial";
-				bufCtx.fillText(proj.length,10,15);
+				//bufCtx.font = "12px Arial";
+				//bufCtx.fillText(proj.length,10,15);
 				
 				//drawing zombies, enemies
 				var z = zombie.length;
 				while(z--) {
-					if(zombie[z].owie == true) {
-						bufCtx.drawImage(ts, zombie[z].tx, zombie[z].ty+16, zombie[z].w, zombie[z].h, zombie[z].x-4, zombie[z].y-8, zombie[z].w, zombie[z].h);
-						zombie[z].owie = false;
+					zombieZ = zombie[z];
+					if(zombieZ.owie == true) {
+						bufCtx.drawImage(ts, zombieZ.tx, zombieZ.ty+16, zombieZ.w, zombieZ.h, zombieZ.x-4, zombieZ.y-8, zombieZ.w, zombieZ.h);
+						zombieZ.owie = false;
 					}else{
-						bufCtx.drawImage(ts, zombie[z].tx, zombie[z].ty, zombie[z].w, zombie[z].h, zombie[z].x-4, zombie[z].y-8, zombie[z].w, zombie[z].h);
+						bufCtx.drawImage(ts, zombieZ.tx, zombieZ.ty, zombieZ.w, zombieZ.h, zombieZ.x-4, zombieZ.y-8, zombieZ.w, zombieZ.h);
 					}	
 				}
 				
@@ -444,7 +447,8 @@
 				var p = proj.length;
 				
 				while(p--) {
-					bufCtx.drawImage(ts, proj[p].tx, proj[p].ty, proj[p].w, proj[p].h, proj[p].x, proj[p].y, proj[p].w, proj[p].h);
+					projP = proj[p];
+					bufCtx.drawImage(ts, projP.tx, projP.ty, projP.w, projP.h, projP.x, projP.y, projP.w, projP.h);
 				}
 				
 				

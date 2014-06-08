@@ -26,10 +26,5 @@
 // END RAF Shim
 
 
-// Fire off our RAF loop
-function animate(){
-  requestAnimationFrame( animate );
-  render();
-}
 
 
