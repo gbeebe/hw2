@@ -12,14 +12,8 @@
 		<script type="text/javascript" src="res/js/animationFrame.js"></script>
 		<script type="text/javascript" src="res/js/mouse.js"></script>
 		<script>
-			if (Build.VERSION.SDK_INT >= 16) {  
-    			Class<?> clazz = webView.getSettings().getClass();
-    			Method method = clazz.getMethod("setAllowUniversalAccessFromFileURLs", boolean.class);
-    			if (method != null) {
-        			method.invoke(webView.getSettings(), true);
-    			}
-			}
-				
+					
+			
 			var scaleX = 1;
 			var scaleY = 1;
 			
@@ -29,10 +23,11 @@
 				ratio: 0.666666667
 			};
 			
+			var levelLoaded = false;
 			
 			var player = {
 				x: 			76,
-				y:			60,
+				y:			-8,
 				ac: 		0,		//animation counter
 				af: 		0, 		//animation frame
 				f: 			1,		//f = facing. 1 is right, 0 is left;
@@ -42,6 +37,7 @@
 			}
 			
 			var spr_splash = _addSprite('res/sprites/splash.png');
+			var spr_tileset = null;	//will hold our sprites;
 			
 			var can = document.createElement('canvas');
 				can.width = 320 //window.innerWidth;
@@ -62,15 +58,24 @@
 				buf.style.backgroundColor = 'black';
 			
 			
-			var backMap = document.createElement('canvas');
-				backMap.width = setting.width;
-				backMap.height = setting.height;
-				
+			var mapRow = [];
+			for (r = 0; r < 32; r++) {
+				mapRow[r] = {'canvas' : null, 'ctx' : null};
+				mapRow[r].canvas = document.createElement('canvas');
+				mapRow[r].canvas.height = 8;
+				mapRow[r].canvas.width = 160;
+				mapRow[r].ctx = mapRow[r].canvas.getContext("2d");
+			}
+			
+			
+			var sprites = document.createElement('canvas');
+				sprites.width = 512;
+				sprites.height = 512;
+			var sprCtx = sprites.getContext("2d");	
 						
 			document.getElementById('holder').appendChild(can);
 			
 			window.onload = function() {
-				console.log("ready");
 				_waitSprites(splash);
 			}
 			
@@ -95,8 +100,8 @@
 			}
 			
 			function postSplash() {	
-				if (_allSpritesLoaded() && (tx != touchX || ty != touchY)) {
-					loaded()
+				if (_allSpritesLoaded() && (tx != touchX || ty != touchY) && levelLoaded == true) {
+					loaded();
 				}else{
 					setTimeout(postSplash, 100);
 				}
@@ -112,9 +117,51 @@
 			clearMap();
 			objects = [];
 			
+			function setRow(r, mr) {
+				mapRow[mr].ctx.beginPath();
+				mapRow[mr].ctx.clearRect(0, 0, setting.width, setting.height);
+				mapRow[mr].ctx.closePath();
+				mapRow[mr].r = r;
+				for(c = 0; c < 20; c++) {
+					if(map[c][r] !== undefined) {
+						
+						if (map[c][r].o == 0) {	
+								//draw regular tile						
+								mapRow[mr].ctx.drawImage(sprites, map[c][r].x * 8, map[c][r].y * 8, 8, 8, c * 8, 0, 8, 8); 
+							}else{
+								//this is an object spawn
+								t = map[c][r];
+								switch(t.o) {
+									case 'tile':
+										break;
+									case 'z1': 
+										addZombie(c*8, 232 -r*8 + player.d, 56, 32, "z1", 16, 16);
+										break;											
+									default: 
+										//console.log("object");
+										addObject(c*8, 232 - r*8 + player.d, t.x*8, t.y*8, t.o, "?");
+										break;
+								}
+								map[c][r] = undefined;
+							}	
+						
+						
+					}
+				}					
+			}
+			
 			function loaded() {				
-			  	
+			  	sprCtx.drawImage(_getSprite(spr_tileset), 0, 0);
 				
+				for(r = 0; r < 32; r++) {
+						setRow(r, r);
+						//if(map[c][r] !== undefined) {
+						//	mapRow[r].ctx.drawImage(sprites, map[c][r].x * 8, map[c][r].y * 8, 8, 8, c * 8, 0, 8, 8); 
+							
+						//}	
+						mapRow[r].y = 232 - r * 8;
+						
+				}
 						
 				draw();
 				logic();
@@ -132,21 +179,26 @@
 				proj[p].y -= proj[p].ay;
 				proj[p].x += proj[p].ax;
 				
-				r = proj[p]
-				for(z = 0; z < zombie.length; z++) {
+				var r = proj[p]
+				var z = zombie.length;
 				
-					if ((	r.x + 4 > zombie[z].x - 4 && 
-							r.x + 4 < zombie[z].x + 10 && 
-		       				r.y + 4 > zombie[z].y + 7 &&
-		       				r.y + 4 < zombie[z].y + 15)) {
-		       			if (zombie[z].s == 0) {	
-		       				console.log("hit");
-			       			zombie[z].s = 1;		       			
-			       			proj.splice(p, 1);		
-			       		}	
-		       		}
-				}
-								
+				if (proj[p] > -8) {
+					proj.splice(p, 1);
+				}else{
+					while(z--) {
+				
+						if ((	r.x + 4 > zombie[z].x - 4 && 
+								r.x + 4 < zombie[z].x + 10 && 
+				   				r.y + 4 > zombie[z].y + 7 &&
+				   				r.y + 4 < zombie[z].y + 15)) {
+				   			if (zombie[z].s > 0) {	
+				   				//console.log("hit");
+					   			zombie[z].s--;		       			
+					   			proj.splice(p, 1);		
+					   		}	
+				   		}
+					}
+				}				
 			}
 			
 			function g1(p) {
@@ -161,6 +213,9 @@
            			//player has this gun? then upgrade gun mode, otherwise switch to this gun.	
            			if (player.g == 1) {
            				player.gm++;
+           				if (player.gm == 1) {
+           					gunCool = 20;
+           				}
            			}else{	
            				player.g = 1;
            				player.gm = 0;
@@ -174,7 +229,6 @@
 				//width and height of sprite					
 				w = w ? w : 8;
 				h = h ? h : 8;
-				if (o == "z1") {console.log("NO!");};
 				proj[proj.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "i": i, "ax": ax, "ay": ay, "w": w, "h": h}								
 			}
 			
@@ -182,7 +236,7 @@
 			//zombie
 			function z1(p) {
 				
-				if (zombie[p].s == 0) {
+				if (zombie[p].s > 0) {
 					zombie[p].tx = 56 + (player.af * 16);
 					zombie[p].y += 1;
 				}else{
@@ -200,7 +254,7 @@
 				w = w ? w : 8;
 				h = h ? h : 8;
 					
-				zombie[zombie.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "w": w, "h": h, "s": 0}	;							
+				zombie[zombie.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "w": w, "h": h, "s": 1}	;							
 			}
 			
 			function logic() {
@@ -215,12 +269,12 @@
 						//single shot
 						addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0, 1);
 						//upgraded to level 1
-						if (player.gm > 0) {						
+						if (player.gm > 1) {						
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.382683432, 0.923879533);
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.382683432, 0.923879533);						
 						} 
 						//upgraded to level 2
-						if (player.gm > 1) {
+						if (player.gm > 2) {
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.707106781, 0.707106781);
 							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.707106781, 0.707106781);
 						}
@@ -228,8 +282,9 @@
 				}
 				
 				//zombie do
-				var n = zombie.length;
-				for(p = 0; p < zombie.length; p++) {				
+				var p = zombie.length;
+				//for(p = 0; p < zombie.length; p++) {				
+				while(p--) {
 					//does the projectile need erased?
 					if (zombie[p].y < -18 || zombie[p].y > setting.height + 18) {
 						zombie.splice(p, 1);
@@ -239,8 +294,8 @@
 				}
 				
 				//objects do
-				var n = proj.length;
-				for(p = 0; p < proj.length; p++) {				
+				p = proj.length;
+				while(p--) {				
 					//does the projectile need erased?
 					if (proj[p].y < -18 || proj[p].y > setting.height + 18) {
 						proj.splice(p, 1);
@@ -250,8 +305,17 @@
 				}
 				
 				//advance screen up
-				player.d += 0.5;
+				if (player.d < 6168) {
+					player.d += 0.5;
 				
+					for (r = 0; r < 32; r++) {
+						mapRow[r].y += 0.5;
+						if (mapRow[r].y == 240) {
+							setRow(mapRow[r].r+32, r);
+							mapRow[r].y -= 256;
+						}
+					}
+				}
 				//player animation frame
 				if (player.ac == 0) {
 					player.af++;
@@ -309,58 +373,34 @@
 			}
 			
 			function draw() {
-				var ts = _getSprite(spr_tileset);
+				var ts = sprites;
+				//var ts = _getSprite(spr_tileset);
 				
 				bufCtx = buf.getContext("2d");
 				//clear the buffer
 				bufCtx.beginPath();
 				bufCtx.clearRect(0, 0, setting.width, setting.height);
 				bufCtx.closePath();
-			
-			
-				
 				
 				dist = parseInt(player.d / 8);
-				
-				//draw visible tiles
-				for (r = dist; r < dist + 31; r++) {
-					for (c = 0; c < 20; c++) {
-						if (map[c][r] !== undefined && map[c][r] !== null) {
-							if (map[c][r].o == 0) {	
-								//draw regular tile						
-								bufCtx.drawImage(ts, map[c][r].x * 8, map[c][r].y * 8, 8, 8, c * 8, 232 - r*8 + player.d, 8, 8);
-							}else{
-								//this is an object spawn
-								t = map[c][r];
-								switch(t.o) {
-									case 'z1': 
-										addZombie(c*8, 232 -r*8 + player.d, 56, 32, "z1", 16, 16);
-										break;											
-									default: 
-										console.log("object");
-										addObject(c*8, 232 - r*8 + player.d, t.x*8, t.y*8, t.o, "?");
-										break;
-								}
-								map[c][r] = undefined;
-							}	
-						}
-					}				
+				var r = 32;
+				while (r--) {
+					bufCtx.drawImage(mapRow[r].canvas, 0, mapRow[r].y);
 				}
 				
 				bufCtx.font = "12px Arial";
-				bufCtx.fillText(zombie.length,10,5);
+				bufCtx.fillText(proj.length,10,15);
 				
 				//drawing zombies, enemies
-				var n = zombie.length;
-				
-				for(z = 0; z < n; z++) {
+				var z = zombie.length;
+				while(z--) {
 					bufCtx.drawImage(ts, zombie[z].tx, zombie[z].ty, zombie[z].w, zombie[z].h, zombie[z].x-4, zombie[z].y-8, zombie[z].w, zombie[z].h);
 				}
 				
 				//drawing projectiles & objects
-				n = proj.length;
+				var p = proj.length;
 				
-				for(p = 0; p < n; p++) {
+				while(p--) {
 					bufCtx.drawImage(ts, proj[p].tx, proj[p].ty, proj[p].w, proj[p].h, proj[p].x, proj[p].y, proj[p].w, proj[p].h);
 				}
 				
@@ -394,6 +434,7 @@
 			for (i = 0; i < tmpMap.length; i++) {
 				map[tmpMap[i].mX][tmpMap[i].mY] = {'x' : tmpMap[i].x, 'y' : tmpMap[i].y, 'o': tmpMap[i].o};
 			}
+			levelLoaded = true;
 		}	
 		</script>
 	

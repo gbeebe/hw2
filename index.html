@@ -11,8 +11,31 @@
 		<script type="text/javascript" src="res/js/sprite.js"></script>
 		<script type="text/javascript" src="res/js/animationFrame.js"></script>
 		<script type="text/javascript" src="res/js/mouse.js"></script>
+		
+		<script type="text/javascript" src="res/js/stats.js"></script>
 		<script>
-					
+				
+			/* **********************************************
+			*						Stats					*
+			*********************************************** */
+			var statsFPS = new Stats();
+			statsFPS.setMode(0); // 0: fps, 1: ms
+
+			statsFPS.domElement.style.position = 'absolute';
+			statsFPS.domElement.style.left = '0px';
+			statsFPS.domElement.style.top = '0px';
+
+			document.body.appendChild( statsFPS.domElement );
+
+			var statsMS = new Stats();
+			statsMS.setMode(1); // 0: fps, 1: ms
+			
+			statsMS.domElement.style.position = 'absolute';
+			statsMS.domElement.style.left = '85px';
+			statsMS.domElement.style.top = '0px';
+
+			document.body.appendChild( statsMS.domElement );
+			
 			
 			var scaleX = 1;
 			var scaleY = 1;
@@ -167,7 +190,7 @@
 				logic();
 			}
 			
-			var gunCool = 40;
+			var gunCool = 20;
 			var gunClock = gunCool;
 			
 			var proj = [];
@@ -194,8 +217,10 @@
 				   			if (zombie[z].s > 0) {	
 				   				//console.log("hit");
 					   			zombie[z].s--;		       			
-					   			proj.splice(p, 1);		
-					   		}	
+					   			proj.splice(p, 1);
+					   			zombie[z].owie = true;		
+					   		}
+					   		
 				   		}
 					}
 				}				
@@ -214,7 +239,7 @@
            			if (player.g == 1) {
            				player.gm++;
            				if (player.gm == 1) {
-           					gunCool = 20;
+           					gunCool = 10;
            				}
            			}else{	
            				player.g = 1;
@@ -254,10 +279,13 @@
 				w = w ? w : 8;
 				h = h ? h : 8;
 					
-				zombie[zombie.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "w": w, "h": h, "s": 1}	;							
+				zombie[zombie.length] = {"x": x, "y": y, "tx": tx, "ty": ty, "fun": o, "w": w, "h": h, "s": 5, "owie": false}	;							
 			}
 			
 			function logic() {
+				statsMS.end();
+				statsMS.begin();
+				
 				//gun
 				gunClock--;
 				
@@ -267,16 +295,24 @@
 					//regular gun
 					if (player.g == 1) {
 						//single shot
-						addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0, 1);
+						addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0, 2);
 						//upgraded to level 1
 						if (player.gm > 1) {						
-							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.382683432, 0.923879533);
-							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.382683432, 0.923879533);						
+							//addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.382683432, 0.923879533);
+							//addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.382683432, 0.923879533);						
+							addObject(player.x-1, 240-player.y+13, 112, 8, "pbullet", "bullet", 0, 2);
+							addObject(player.x+9, 240-player.y+13, 112, 8, "pbullet", "bullet", 0, 2);
 						} 
 						//upgraded to level 2
 						if (player.gm > 2) {
-							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.707106781, 0.707106781);
-							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.707106781, 0.707106781);
+							//addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.707106781, 0.707106781);
+							//addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.707106781, 0.707106781);
+							
+							//addObject(player.x-5, 240-player.y+17, 112, 8, "pbullet", "bullet", 0, 2);
+							//addObject(player.x+13, 240-player.y+17, 112, 8, "pbullet", "bullet", 0, 2);
+							
+							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", -0.382683432 * 2, 0.923879533 * 2);
+							addObject(player.x+4, 240-player.y+10, 112, 8, "pbullet", "bullet", 0.382683432 * 2, 0.923879533 * 2);
 						}
 					}	
 				}
@@ -370,9 +406,11 @@
 				
 				
 				setTimeout(logic, 1000 / 60);
+				
 			}
 			
 			function draw() {
+				statsFPS.begin();
 				var ts = sprites;
 				//var ts = _getSprite(spr_tileset);
 				
@@ -394,7 +432,12 @@
 				//drawing zombies, enemies
 				var z = zombie.length;
 				while(z--) {
-					bufCtx.drawImage(ts, zombie[z].tx, zombie[z].ty, zombie[z].w, zombie[z].h, zombie[z].x-4, zombie[z].y-8, zombie[z].w, zombie[z].h);
+					if(zombie[z].owie == true) {
+						bufCtx.drawImage(ts, zombie[z].tx, zombie[z].ty+16, zombie[z].w, zombie[z].h, zombie[z].x-4, zombie[z].y-8, zombie[z].w, zombie[z].h);
+						zombie[z].owie = false;
+					}else{
+						bufCtx.drawImage(ts, zombie[z].tx, zombie[z].ty, zombie[z].w, zombie[z].h, zombie[z].x-4, zombie[z].y-8, zombie[z].w, zombie[z].h);
+					}	
 				}
 				
 				//drawing projectiles & objects
@@ -414,7 +457,7 @@
 				
 				
 				requestAnimationFrame(draw);
-				
+				statsFPS.end();
 			}
 			
 		//level loader
