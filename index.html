@@ -209,18 +209,7 @@
 					proj.splice(p, 1);
 				}else{
 					while(z--) {
-						zombieZ = zombie[z];
-						if ((	r.x + 4 > zombieZ.x - 4 && 
-								r.x + 4 < zombieZ.x + 10 && 
-				   				r.y + 4 > zombieZ.y + 7 &&
-				   				r.y + 4 < zombieZ.y + 15)) {
-				   			if (zombieZ.s > 0) {	
-					   			zombieZ.s--;		       			
-					   			proj.splice(p, 1);
-					   			zombieZ.owie = true;		
-					   		}
-					   		
-				   		}
+						
 					}
 				}				
 			}
@@ -268,9 +257,9 @@
 					zombieZ.y += 0.5;
 				}	
 				
-				if (zombieZ.y > setting.hegiht) {
-					zombie.splice(z, 1);
-				}
+				//if (zombieZ.y > setting.hegiht) {
+				//	zombie.splice(z, 1);
+				//}
 			}
 			
 			function addZombie(x, y, tx, ty, o, w, h) {
@@ -322,7 +311,7 @@
 					zombieZ = zombie[z];
 					//does the projectile need erased?
 					if (zombieZ.y < -18 || zombieZ.y > setting.height + 18) {
-						zombie.splice(p, 1);
+						zombie.splice(z, 1);
 					}else{
 						window[zombieZ.fun](z);
 					}
@@ -345,10 +334,11 @@
 					player.d += 0.5;
 				
 					for (r = 0; r < 32; r++) {
-						mapRow[r].y += 0.5;
-						if (mapRow[r].y == 240) {
-							setRow(mapRow[r].r+32, r);
-							mapRow[r].y -= 256;
+						mapRowR = mapRow[r]
+						mapRowR.y += 0.5;
+						if (mapRowR.y == 240) {
+							setRow(mapRowR.r+32, r);
+							mapRowR.y -= 256;
 						}
 					}
 				}
