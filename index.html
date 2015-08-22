@@ -45,14 +45,14 @@
 			document.body.appendChild( statsMS.domElement );
 			
 			
-			var scaleX = 1;
-			var scaleY = 1;
-			
 			var setting = {
 				width: 160,
 				height: 240,
 				ratio: 0.666666667
 			};
+			
+			var scaleX = (window.innerWidth / setting.width);
+			var scaleY = (window.innerHeight / setting.height);
 			
 			var levelLoaded = false;
 			
