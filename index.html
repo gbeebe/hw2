@@ -122,7 +122,7 @@
 				bufCtx.closePath();
 			
 				bufCtx.drawImage(_getSprite(spr_splash),0, 0);				
-				ctx.drawImage(buf, 0, 0, 320, 480);
+				ctx.drawImage(buf, 0, 0, window.width, window.width * 1.5);
 				
 				//load resources
 				loadLevel('l1-1');
@@ -465,7 +465,7 @@
 				bufCtx.drawImage(ts, 56 + player.af * 16, player.f * 16, 16, 16, player.x, 240-player.y, 16, 16);
 				
 				//draw the buffer on screen
-				ctx.drawImage(buf, 0, 0, 320, 480);
+				ctx.drawImage(buf, 0, 0, window.width, window.width * 1.5);
 				
 				
 				
